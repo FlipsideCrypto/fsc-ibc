@@ -1,0 +1,29 @@
+version: 2
+
+sources:
+  - name: github_actions
+    database: "{{ target.database }}"
+    schema: github_actions
+    tables:
+      - name: workflows
+  - name: bronze_streamline
+    database: "{{ target.database }}"
+    schema: streamline      
+    tables:
+      - name: blocks
+      - name: tx_counts
+      - name: txs
+  - name: crosschain_silver
+      {{ 'CROSSCHAIN_DEV' if '_DEV' in target.database.upper() else 'CROSSCHAIN' }}
+    schema: silver
+    tables:
+      - name: number_sequence
+      - name: labels_combined
+      - name: hourly_prices_coin_gecko
+  - name: fsc_ibc_admin
+    database: >-
+      {{ 'FSC_IBC_DEV' if '_DEV' in target.database.upper() else 'FSC_IBC' }}
+    schema: admin
+    tables:
+      - name: _master_keys
+      - name: rpc_node_logs
