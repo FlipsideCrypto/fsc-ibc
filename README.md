@@ -1,6 +1,6 @@
-# README for EVM dbt macros, models and documentation
+# README for IBC dbt macros, models and documentation
 
-[EVM Wiki & Documentation](https://github.com/FlipsideCrypto/fsc-ibc/wiki)
+[IBC Wiki & Documentation](https://github.com/FlipsideCrypto/fsc-ibc/wiki)
 
 ---
 
@@ -12,7 +12,7 @@ The `fsc_ibc` dbt package is a centralized repository consisting of various dbt 
 2. Add the following (reference the latest version from [here](https://github.com/FlipsideCrypto/fsc-ibc/tags)):
 ```
 - git: https://github.com/FlipsideCrypto/fsc-ibc.git
-  revision: "v1.1.0"
+  revision: "v0.0.1"
 ```
 3. Run `dbt clean && dbt deps` to install the package
 
@@ -43,7 +43,7 @@ The recommended development flow for making changes to `fsc-ibc` is as follows:
 2. Make the necessary changes to your code in your dbt package repository (e.g., fsc-utils).
 3. Commit your changes with `git add .` and `git commit -m "Your commit message"`.
 4. Push your commits to the remote repository with `git push ...`.
-5. Tag your commit with a version number using `git tag -a v1.1.0 -m "version 1.1.0"`.
+5. Tag your commit with a version number using `git tag -a v0.0.1 -m "version 0.0.1"`.
 6. Push your tags to the remote repository with `git push origin --tags`.
 7. Add official `Release` notes to the repo with the new tag.
   * Each `Release` should be formatted with the following template:
@@ -63,11 +63,9 @@ make new_repo_tag
 ```
 ```
 Last 3 tags:
-v1.11.0
-v1.10.0
-v1.9.0
+v0.0.1
 
-Enter new tag name (e.g., v1.1.0) or 'q' to quit:
+Enter new tag name (e.g., v0.0.1) or 'q' to quit:
 ```
 
 ```
