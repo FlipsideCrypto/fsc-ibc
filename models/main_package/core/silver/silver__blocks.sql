@@ -7,8 +7,7 @@
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = 'blocks_id',
-    cluster_by = ['modified_timestamp::DATE','partition_key'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number)",
+    cluster_by = ['modified_timestamp::DATE'],
     incremental_predicates = [fsc_ibc.standard_predicate()],
     tags = ['silver','core','phase_2']
 ) }}

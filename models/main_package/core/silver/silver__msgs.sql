@@ -8,7 +8,6 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'msgs_id',
     cluster_by = ['modified_timestamp::DATE', 'partition_key'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number, transaction_id)",
     incremental_predicates = [fsc_ibc.standard_predicate()],
     tags = ['silver', 'core', 'phase_2']
 ) }}
@@ -16,7 +15,7 @@
 WITH bronze_msgs AS (
 
   SELECT
-    transactions.block_id,
+    transactions.block_number,
     transactions.block_timestamp,
     transactions.tx_id,
     transactions.gas_used,
@@ -106,7 +105,7 @@ GROUPING AS (
 ),
 msgs AS (
     SELECT
-        block_id,
+        block_number,
         block_timestamp,
         bronze_msgs.tx_id,
         tx_succeeded,
@@ -138,7 +137,7 @@ msgs AS (
         AND bronze_msgs.msg_index = b.msg_index
 )
 SELECT
-    block_id,
+    block_number,
     block_timestamp,
     tx_id,
     tx_succeeded,

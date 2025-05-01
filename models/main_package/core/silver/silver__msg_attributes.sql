@@ -6,16 +6,15 @@
 {{ config (
     materialized = 'incremental',
     incremental_strategy = 'delete+insert',
-    unique_key = 'msgs_id',
-    cluster_by = ['modified_timestamp::DATE', 'partition_key'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number, transaction_id)",
+    unique_key = 'msg_attributes_id',
+    cluster_by = ['modified_timestamp::DATE'],
     incremental_predicates = [fsc_ibc.standard_predicate()],
     tags = ['silver', 'core', 'phase_2']
 ) }}
 
 WITH silver_msgs AS (
     SELECT
-        block_id,
+        block_number,
         block_timestamp,
         tx_id,
         tx_succeeded,
@@ -52,7 +51,7 @@ WITH silver_msgs AS (
     {% endif %}
 )
 SELECT
-    block_id,
+    block_number,
     block_timestamp,
     tx_id,
     tx_succeeded,

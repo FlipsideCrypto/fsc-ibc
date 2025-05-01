@@ -9,7 +9,6 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'transactions_id',
     cluster_by = ['modified_timestamp::DATE','partition_key'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number, transaction_id)",
     incremental_predicates = [fsc_ibc.standard_predicate()],
     tags = ['silver', 'core', 'phase_2']
 ) }}
