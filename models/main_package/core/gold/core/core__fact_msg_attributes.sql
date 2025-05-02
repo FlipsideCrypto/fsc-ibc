@@ -9,13 +9,13 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'msg_attributes_id',
     cluster_by = ['block_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number, tx_id)",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id, tx_id)",
     incremental_predicates = [fsc_ibc.standard_predicate()],
     tags = ['gold', 'core', 'phase_2']
 ) }}
 
 SELECT
-    block_number,
+    block_id,
     block_timestamp,
     tx_id,
     tx_succeeded,

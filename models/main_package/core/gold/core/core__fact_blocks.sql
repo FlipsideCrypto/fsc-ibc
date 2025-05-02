@@ -9,19 +9,20 @@
     incremental_strategy = 'delete+insert',
     unique_key = 'blocks_id',
     cluster_by = ['block_timestamp::DATE'],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number)",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id)",
     incremental_predicates = [fsc_ibc.standard_predicate()],
     tags = ['gold', 'core', 'phase_2']
 ) }}
 
 SELECT
-    block_number,
+    blockchain,
+    block_id,
     block_timestamp,
     chain_id,
     tx_count,
     proposer_address,
     validator_hash,
-    {{ dbt_utils.generate_surrogate_key(['block_number']) }} AS fact_blocks_id,
+    {{ dbt_utils.generate_surrogate_key(['block_id']) }} AS fact_blocks_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id

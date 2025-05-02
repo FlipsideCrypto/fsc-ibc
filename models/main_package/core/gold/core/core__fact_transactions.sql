@@ -10,23 +10,23 @@
     unique_key = 'transactions_id',
     cluster_by = ['block_timestamp::DATE'],
     incremental_predicates = [fsc_ibc.standard_predicate()],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number, tx_id)",
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id, tx_id)",
     tags = ['gold', 'core', 'phase_2']
 ) }}
 
 SELECT
-    block_number,
+    block_id,
     block_timestamp,
-    tx_id,
-    tx_from,
-    tx_succeeded,
     codespace,
-    fee,
-    fee_denom,
-    gas_used,
-    gas_wanted,
+    tx_id,
+    {# tx_from, #}
+    tx_succeeded,
     tx_code,
     tx_log,
+    {# fee, #}
+    {# fee_denom, #}
+    gas_used,
+    gas_wanted,
     {{ dbt_utils.generate_surrogate_key(['tx_id']) }} AS fact_transactions_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,

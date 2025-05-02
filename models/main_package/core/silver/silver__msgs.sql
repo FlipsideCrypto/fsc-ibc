@@ -15,7 +15,7 @@
 WITH bronze_msgs AS (
 
   SELECT
-    transactions.block_number,
+    transactions.block_id,
     transactions.block_timestamp,
     transactions.tx_id,
     transactions.gas_used,
@@ -105,7 +105,7 @@ GROUPING AS (
 ),
 msgs AS (
     SELECT
-        block_number,
+        block_id,
         block_timestamp,
         bronze_msgs.tx_id,
         tx_succeeded,
@@ -137,7 +137,7 @@ msgs AS (
         AND bronze_msgs.msg_index = b.msg_index
 )
 SELECT
-    block_number,
+    block_id,
     block_timestamp,
     tx_id,
     tx_succeeded,

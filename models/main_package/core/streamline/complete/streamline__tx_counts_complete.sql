@@ -6,17 +6,17 @@
 {{ config (
     materialized = "incremental",
     incremental_strategy = 'merge',
-    unique_key = "block_number",
-    cluster_by = "ROUND(block_number, -3)",
+    unique_key = "block_id",
+    cluster_by = "ROUND(block_id, -3)",
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id)"
 ) }}
 
 SELECT
-    VALUE :BLOCK_NUMBER :: INT AS block_number,
+    VALUE :block_id :: INT AS block_id,
     DATA :result :total_count :: INT AS tx_count,
     {{ dbt_utils.generate_surrogate_key(
-        ['block_number']
+        ['block_id']
     ) }} AS complete_tx_counts_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
@@ -33,11 +33,11 @@ WHERE
         FROM
             {{ this }}
     )
-    AND block_number NOT IN (21208991)
+    AND block_id NOT IN (21208991)
 {% else %}
     {{ ref('bronze__streamline_tx_counts_fr') }}
 {% endif %}
 
-qualify(ROW_NUMBER() over (PARTITION BY block_number
+qualify(ROW_NUMBER() over (PARTITION BY block_id
 ORDER BY
     inserted_timestamp DESC)) = 1

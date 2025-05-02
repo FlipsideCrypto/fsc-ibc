@@ -4,7 +4,7 @@
 ) }}
 
 SELECT
-    _id AS block_number
+    _id AS block_id
 FROM
     {{ source(
         'crosschain_silver',
@@ -14,7 +14,7 @@ WHERE
     _id >= 5200791
     AND _id <= (
         SELECT
-            MAX(block_number)
+            MAX(block_id)
         FROM
             {{ ref('streamline__chainhead') }}
     )

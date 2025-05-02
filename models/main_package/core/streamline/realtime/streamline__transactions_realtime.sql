@@ -1,7 +1,7 @@
 WITH blocks AS (
 
     SELECT
-        A.block_number,
+        A.block_id,
         tx_count
     FROM
         {{ ref('streamline__tx_counts_complete') }} A
@@ -26,7 +26,7 @@ numbers AS (
         ),
         blocks_with_page_numbers AS (
             SELECT
-                tt.block_number :: INT AS block_number,
+                tt.block_id :: INT AS block_id,
                 n.n AS page_number
             FROM
                 blocks tt
@@ -39,14 +39,14 @@ numbers AS (
                 END
             EXCEPT
             SELECT
-                block_number,
+                block_id,
                 page_number
             FROM
                 {{ ref('streamline__transactions_complete') }}
         )
     SELECT
         ROUND(
-            block_number,
+            block_id,
             -3
         ) :: INT AS partition_key,
         {{ target.database }}.live.udf_api(
@@ -57,11 +57,11 @@ numbers AS (
                 'fsc-quantum-state', 'streamline'
             ),
             OBJECT_CONSTRUCT(
-                'id', block_number,
+                'id', block_id,
                 'jsonrpc', '2.0',
                 'method', 'tx_search',
                 'params', ARRAY_CONSTRUCT(
-                    'tx.height=' || block_number :: STRING,
+                    'tx.height=' || block_id :: STRING,
                     TRUE,
                     page_number :: STRING,
                     '100',
@@ -71,11 +71,11 @@ numbers AS (
             '{{ vars.GLOBAL_NODE_VAULT_PATH }}'
         ) AS request,
         page_number,
-        block_number AS block_number_requested
+        block_id AS block_id_requested
     FROM
         blocks_with_page_numbers
     ORDER BY
-        block_number
+        block_id
 
 LIMIT {{ vars.MAIN_SL_TRANSACTIONS_REALTIME_SQL_LIMIT }}
 

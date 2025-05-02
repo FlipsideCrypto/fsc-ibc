@@ -8,17 +8,17 @@
 WITH blocks AS (
 
     SELECT
-        block_number
+        block_id
     FROM
         {{ ref('streamline__blocks') }}
     EXCEPT
     SELECT
-        block_number
+        block_id
     FROM
         {{ ref('streamline__blocks_complete') }}
 )
 SELECT
-    ROUND(block_number, -4) :: INT AS partition_key,
+    ROUND(block_id, -4) :: INT AS partition_key,
     {{ target.database }}.live.udf_api(
         'POST',
         '{{ vars.GLOBAL_NODE_URL }}',
@@ -27,17 +27,17 @@ SELECT
             'fsc-quantum-state', 'streamline'
         ),
         OBJECT_CONSTRUCT(
-            'id', block_number,
+            'id', block_id,
             'jsonrpc', '2.0',
             'method', 'block',
-            'params', ARRAY_CONSTRUCT(block_number :: STRING)
+            'params', ARRAY_CONSTRUCT(block_id :: STRING)
         ),
         '{{ vars.GLOBAL_NODE_VAULT_PATH }}'
     ) AS request
 FROM
     blocks
 ORDER BY
-    block_number
+    block_id
 
 LIMIT {{ vars.MAIN_SL_BLOCKS_REALTIME_SQL_LIMIT }}
 

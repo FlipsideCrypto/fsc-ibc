@@ -7,23 +7,23 @@
     materialized = "incremental",
     incremental_strategy = 'merge',
     unique_key = "complete_transactions_id",
-    cluster_by = "ROUND(block_number, -3)",
+    cluster_by = "ROUND(block_id, -3)",
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id)"
 ) }}
 
 SELECT
     COALESCE(
-        VALUE :BLOCK_NUMBER_REQUESTED,
+        VALUE :block_id_REQUESTED,
         DATA :height,
         VALUE :data :result :txs [0] :height
-    ) :: INT AS block_number,
+    ) :: INT AS block_id,
     COALESCE(
         VALUE :PAGE_NUMBER,
         metadata :request :params [2]
     ) :: INT AS page_number,
     {{ dbt_utils.generate_surrogate_key(
-        ['block_number','page_number']
+        ['block_id','page_number']
     ) }} AS complete_transactions_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,

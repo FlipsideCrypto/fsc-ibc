@@ -1,5 +1,5 @@
 {% macro standard_predicate(
-        input_column = 'block_number'
+        input_column = 'block_id'
     ) -%}
     {%- set database_name = target.database -%}
     {%- set schema_name = generate_schema_name(

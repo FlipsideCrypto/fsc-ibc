@@ -3,7 +3,7 @@
         source_version,
         partition_function,
         balances,
-        block_number,
+        block_id,
         uses_receipts_by_hash
     ) %}
 
@@ -32,14 +32,14 @@
             r.block_timestamp :: TIMESTAMP AS block_timestamp
         {% endif %}
 
-        {% if block_number %},
+        {% if block_id %},
             COALESCE(
-                s.value :"BLOCK_NUMBER" :: STRING,
+                s.value :"block_id" :: STRING,
                 s.metadata :request :"data" :id :: STRING,
                 PARSE_JSON(
                     s.metadata :request :"data"
                 ) :id :: STRING
-            ) :: INT AS block_number
+            ) :: INT AS block_id
         {% endif %}
         {% if uses_receipts_by_hash %},
             s.value :"TX_HASH" :: STRING AS tx_hash
@@ -57,9 +57,9 @@
             {% if balances %}
             JOIN {{ ref('_block_ranges') }}
             r
-            ON r.block_number = COALESCE(
-                s.value :"BLOCK_NUMBER" :: INT,
-                s.value :"block_number" :: INT
+            ON r.block_id = COALESCE(
+                s.value :"block_id" :: INT,
+                s.value :"block_id" :: INT
             )
         {% endif %}
         WHERE
@@ -74,7 +74,7 @@
         partition_function,
         partition_join_key,
         balances,
-        block_number,
+        block_id,
         uses_receipts_by_hash
     ) %}
 
@@ -103,15 +103,15 @@ SELECT
     r.block_timestamp :: TIMESTAMP AS block_timestamp
 {% endif %}
 
-{% if block_number %},
+{% if block_id %},
     COALESCE(
-        s.value :"BLOCK_NUMBER" :: STRING,
-        s.value :"block_number" :: STRING,
+        s.value :"block_id" :: STRING,
+        s.value :"block_id" :: STRING,
         s.metadata :request :"data" :id :: STRING,
         PARSE_JSON(
             s.metadata :request :"data"
         ) :id :: STRING
-    ) :: INT AS block_number
+    ) :: INT AS block_id
 {% endif %}
 {% if uses_receipts_by_hash %},
     s.value :"TX_HASH" :: STRING AS tx_hash
@@ -129,9 +129,9 @@ FROM
     {% if balances %}
         JOIN {{ ref('_block_ranges') }}
         r
-        ON r.block_number = COALESCE(
-            s.value :"BLOCK_NUMBER" :: INT,
-            s.value :"block_number" :: INT
+        ON r.block_id = COALESCE(
+            s.value :"block_id" :: INT,
+            s.value :"block_id" :: INT
         )
     {% endif %}
 WHERE

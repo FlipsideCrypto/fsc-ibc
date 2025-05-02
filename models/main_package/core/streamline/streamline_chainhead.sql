@@ -24,4 +24,4 @@ SELECT
             []
         ),
         '<VAULT_SECRET_PATH_HERE>'
-    ) :data :result :sync_info :latest_block_height :: INT AS block_number
+    ) :data :result :sync_info :latest_block_height :: INT AS block_id

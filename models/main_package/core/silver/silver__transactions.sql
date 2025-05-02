@@ -15,7 +15,7 @@
 
 WITH bronze_transactions AS (
     SELECT
-        block_number,
+        block_id,
         COALESCE(
             DATA :hash, 
             f.value :hash
@@ -40,17 +40,6 @@ WITH bronze_transactions AS (
             DATA :tx_result :code,
             f.value :tx_result :code
         ) :: INT AS tx_code,
-        CASE
-            WHEN NULLIF(
-                tx_code,
-                0
-            ) IS NOT NULL THEN FALSE
-            ELSE TRUE
-        END AS tx_succeeded,
-        COALESCE(
-            DATA :tx_result :events,
-            f.value :tx_result :events
-        ) AS msgs,
         COALESCE(
             TRY_PARSE_JSON(
                 COALESCE(
@@ -69,12 +58,12 @@ WITH bronze_transactions AS (
         END AS DATA,
         partition_key,
         COALESCE(
-            transactions.value :BLOCK_NUMBER_REQUESTED,
+            transactions.value :block_id_REQUESTED,
             REPLACE(
                 metadata :request :params [0],
                 'tx.height='
             )
-        ) AS block_number_requested,
+        ) AS block_id_requested,
         inserted_timestamp AS _inserted_timestamp
     FROM
         {% if is_incremental() %}
@@ -98,22 +87,25 @@ WITH bronze_transactions AS (
         {% endif %}
 )
 SELECT
-    block_number,
+    block_id,
+    block_timestamp,
+    codespace,
     tx_id,
     tx_index,
-    codespace,
+    tx_log,
+    tx_succeeded,
+    {# tx_from, #}
+    {# fee, #}
+    {# fee_denom, #}
     gas_used,
     gas_wanted,
     tx_code,
-    tx_succeeded,
-    msgs,
-    tx_log,
     DATA,
     partition_key,
-    block_number_requested,
+    block_id_requested,
     _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(
-        ['block_number_requested', 'tx_id']
+        ['block_id_requested', 'tx_id']
     ) }} AS transactions_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
@@ -121,6 +113,6 @@ SELECT
 FROM
     bronze_transactions
 QUALIFY(ROW_NUMBER() over (
-    PARTITION BY block_number_requested, tx_id
+    PARTITION BY block_id_requested, tx_id
     ORDER BY _inserted_timestamp DESC)
 ) = 1 

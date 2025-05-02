@@ -14,7 +14,7 @@
 
 WITH silver_msgs AS (
     SELECT
-        block_number,
+        block_id,
         block_timestamp,
         tx_id,
         tx_succeeded,
@@ -51,7 +51,7 @@ WITH silver_msgs AS (
     {% endif %}
 )
 SELECT
-    block_number,
+    block_id,
     block_timestamp,
     tx_id,
     tx_succeeded,

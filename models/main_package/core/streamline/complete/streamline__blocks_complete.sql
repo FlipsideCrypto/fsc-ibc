@@ -5,16 +5,16 @@
 {{ config (
     materialized = "incremental",
     incremental_strategy = 'merge',
-    unique_key = "block_number",
-    cluster_by = "ROUND(block_number, -3)",
+    unique_key = "block_id",
+    cluster_by = "ROUND(block_id, -3)",
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_number)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id)"
 ) }}
 
 SELECT
-    DATA :result :block :header :height :: INT AS block_number,
+    DATA :result :block :header :height :: INT AS block_id,
     {{ dbt_utils.generate_surrogate_key(
-        ['block_number']
+        ['block_id']
     ) }} AS complete_blocks_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
@@ -35,6 +35,6 @@ WHERE
     {{ ref('bronze__streamline_blocks_fr') }}
 {% endif %}
 
-qualify(ROW_NUMBER() over (PARTITION BY block_number
+qualify(ROW_NUMBER() over (PARTITION BY block_id
 ORDER BY
     inserted_timestamp DESC)) = 1
