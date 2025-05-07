@@ -1,7 +1,7 @@
 {# Get variables #}
 {% set vars = return_vars() %}
 
--- depends_on: {{ ref('bronze__streamline_transactions') }}
+-- depends_on: {{ ref('bronze__transactions') }}
 
 {{ config (
     materialized = "incremental",
@@ -32,9 +32,9 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__streamline_transactions') }}
+{{ ref('bronze__transactions') }}
 {% else %}
-    {{ ref('bronze__streamline_transactions_fr') }}
+    {{ ref('bronze__transactions_fr') }}
 {% endif %}
 WHERE
     DATA <> '[]'

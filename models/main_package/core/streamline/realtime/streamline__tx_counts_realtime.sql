@@ -1,7 +1,7 @@
 {# Get variables #}
 {% set vars = return_vars() %}
 
--- depends_on: {{ ref('streamline__complete_tx_counts') }}
+-- depends_on: {{ ref('streamline__tx_counts_complete') }}
 
 {{ config (
     materialized = 'view',

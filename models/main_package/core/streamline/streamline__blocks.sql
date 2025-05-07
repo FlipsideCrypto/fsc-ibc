@@ -18,5 +18,5 @@ WHERE
                 0
             )
         FROM
-            {{ ref('streamline_chainhead') }}
+            {{ ref('streamline__chainhead') }}
     )
