@@ -4,5 +4,6 @@
 ) }}
 
 {{ streamline_external_table_query(
-    source_name = 'blocks'
+    source_name = 'blocks',
+    source_version = 'v2'
 ) }}
