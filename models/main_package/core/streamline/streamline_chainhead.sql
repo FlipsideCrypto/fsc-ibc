@@ -23,5 +23,5 @@ SELECT
             'params',
             []
         ),
-        '<VAULT_SECRET_PATH_HERE>'
+        '{{ vars.GLOBAL_NODE_VAULT_PATH }}'
     ) :data :result :sync_info :latest_block_height :: INT AS block_id

@@ -1,8 +1,8 @@
 {# Get variables #}
 {% set vars = return_vars() %}
 
--- depends_on: {{ ref('bronze__streamline_transactions') }}
--- depends_on: {{ ref('bronze__streamline_transactions_fr') }}
+-- depends_on: {{ ref('bronze__transactions') }}
+-- depends_on: {{ ref('bronze__transactions_fr') }}
 
 {{ config (
     materialized = "incremental",
@@ -67,9 +67,9 @@ WITH bronze_transactions AS (
         inserted_timestamp AS _inserted_timestamp
     FROM
         {% if is_incremental() %}
-            {{ ref('bronze__streamline_transactions') }}
+            {{ ref('bronze__transactions') }}
         {% else %}
-            {{ ref('bronze__streamline_transactions_fr') }}
+            {{ ref('bronze__transactions_fr') }}
         {% endif %}
         AS transactions
     JOIN LATERAL FLATTEN(

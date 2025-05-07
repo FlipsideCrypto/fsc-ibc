@@ -11,10 +11,12 @@ FROM
         'number_sequence'
     ) }}
 WHERE
-    _id >= 5200791
-    AND _id <= (
+    _id <= (
         SELECT
-            MAX(block_id)
+            COALESCE(
+                block_id,
+                0
+            )
         FROM
-            {{ ref('streamline__chainhead') }}
+            {{ ref('streamline_chainhead') }}
     )
