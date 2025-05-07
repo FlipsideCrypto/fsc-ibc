@@ -3,7 +3,7 @@
 # name or the intended use of these models
 name: "fsc_ibc"
 version: "1.0.0"
-config-version: 1
+config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
 profile: "fsc_ibc"
