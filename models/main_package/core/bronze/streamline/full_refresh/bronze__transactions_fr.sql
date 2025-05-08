@@ -5,5 +5,5 @@
 
 {{ streamline_external_table_query_fr(
     source_name = 'transactions',
-    source_version = 'v2'
+    source_version = ''
 ) }}

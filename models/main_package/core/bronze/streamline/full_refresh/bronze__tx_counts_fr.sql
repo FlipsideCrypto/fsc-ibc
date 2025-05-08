@@ -5,5 +5,5 @@
 
 {{ streamline_external_table_query_fr(
     source_name = 'tx_counts',
-    source_version = 'v2'
+    source_version = ''
 ) }}
