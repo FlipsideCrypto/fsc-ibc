@@ -8,7 +8,8 @@
     unique_key = "block_id",
     cluster_by = "ROUND(block_id, -3)",
     merge_exclude_columns = ["inserted_timestamp"],
-    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id)"
+    post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id)",
+    tags = ['streamline','core','complete','phase_1']
 ) }}
 
 SELECT

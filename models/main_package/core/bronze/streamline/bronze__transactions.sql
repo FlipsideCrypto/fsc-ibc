@@ -4,6 +4,5 @@
 ) }}
 
 {{ streamline_external_table_query(
-    source_name = 'transactions',
-    source_version = ''
+    source_name = 'transactions'
 ) }}

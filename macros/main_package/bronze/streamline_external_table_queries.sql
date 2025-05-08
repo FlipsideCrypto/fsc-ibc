@@ -1,141 +1,66 @@
 {% macro streamline_external_table_query(
-        source_name,
-        source_version,
-        partition_function,
-        balances,
-        block_id,
-        uses_receipts_by_hash
+    source_name,
+    partition_function="CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER)"
     ) %}
 
-    {% if source_version != '' %}
-        {% set source_version = '_' ~ source_version.lower() %}
-    {% endif %}
+    {% set days = var("BRONZE_LOOKBACK_DAYS")%}
 
     WITH meta AS (
         SELECT
-            job_created_time AS _inserted_timestamp,
+            last_modified AS inserted_timestamp,
             file_name,
             {{ partition_function }} AS partition_key
         FROM
             TABLE(
                 information_schema.external_table_file_registration_history(
-                    start_time => DATEADD('day', -3, CURRENT_TIMESTAMP()),
-                    table_name => '{{ source( "bronze_streamline", source_name ~ source_version) }}')
+                    start_time => DATEADD('day', -ABS({{days}}), CURRENT_TIMESTAMP()),
+                    table_name => '{{ source( "bronze_streamline", source_name) }}')
                 ) A
-            )
+        )
         SELECT
             s.*,
             b.file_name,
-            b._inserted_timestamp
-
-            {% if balances %},
-            r.block_timestamp :: TIMESTAMP AS block_timestamp
-        {% endif %}
-
-        {% if block_id %},
-            COALESCE(
-                s.value :"block_id" :: STRING,
-                s.metadata :request :"data" :id :: STRING,
-                PARSE_JSON(
-                    s.metadata :request :"data"
-                ) :id :: STRING
-            ) :: INT AS block_id
-        {% endif %}
-        {% if uses_receipts_by_hash %},
-            s.value :"TX_HASH" :: STRING AS tx_hash
-        {% endif %}
+            inserted_timestamp
         FROM
-            {{ source(
-                "bronze_streamline",
-                source_name ~ source_version
-            ) }}
-            s
+            {{ source("bronze_streamline", source_name) }} s
             JOIN meta b
             ON b.file_name = metadata$filename
             AND b.partition_key = s.partition_key
-
-            {% if balances %}
-            JOIN {{ ref('_block_ranges') }}
-            r
-            ON r.block_id = COALESCE(
-                s.value :"block_id" :: INT,
-                s.value :"block_id" :: INT
-            )
-        {% endif %}
         WHERE
             b.partition_key = s.partition_key
             AND DATA :error IS NULL
-            AND DATA IS NOT NULL
 {% endmacro %}
 
-{% macro streamline_external_table_query_fr(
+{% macro streamline_external_table_FR_query_v2(
         source_name,
-        source_version,
-        partition_function,
-        partition_join_key,
-        balances,
-        block_id,
-        uses_receipts_by_hash
+        partition_function="CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER)"
     ) %}
-
-    {% if source_version != '' %}
-        {% set source_version = '_' ~ source_version.lower() %}
-    {% endif %}
-    
     WITH meta AS (
         SELECT
-            registered_on AS _inserted_timestamp,
+            registered_on AS inserted_timestamp,
             file_name,
             {{ partition_function }} AS partition_key
         FROM
             TABLE(
                 information_schema.external_table_files(
-                    table_name => '{{ source( "bronze_streamline", source_name ~ source_version) }}'
+                    table_name => '{{ source( "bronze_streamline", source_name) }}'
                 )
             ) A
     )
 SELECT
     s.*,
     b.file_name,
-    b._inserted_timestamp
-
-    {% if balances %},
-    r.block_timestamp :: TIMESTAMP AS block_timestamp
-{% endif %}
-
-{% if block_id %},
-    COALESCE(
-        s.value :"block_id" :: STRING,
-        s.value :"block_id" :: STRING,
-        s.metadata :request :"data" :id :: STRING,
-        PARSE_JSON(
-            s.metadata :request :"data"
-        ) :id :: STRING
-    ) :: INT AS block_id
-{% endif %}
-{% if uses_receipts_by_hash %},
-    s.value :"TX_HASH" :: STRING AS tx_hash
-{% endif %}
+    inserted_timestamp
 FROM
     {{ source(
         "bronze_streamline",
-        source_name ~ source_version
+        source_name
     ) }}
     s
     JOIN meta b
     ON b.file_name = metadata$filename
-    AND b.partition_key = s.{{ partition_join_key }}
-
-    {% if balances %}
-        JOIN {{ ref('_block_ranges') }}
-        r
-        ON r.block_id = COALESCE(
-            s.value :"block_id" :: INT,
-            s.value :"block_id" :: INT
-        )
-    {% endif %}
+    AND b.partition_key = s.partition_key
 WHERE
-    b.partition_key = s.{{ partition_join_key }}
+    b.partition_key = s.partition_key
     AND DATA :error IS NULL
-    AND DATA IS NOT NULL
 {% endmacro %}

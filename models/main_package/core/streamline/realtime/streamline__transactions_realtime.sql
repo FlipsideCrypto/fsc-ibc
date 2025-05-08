@@ -1,3 +1,15 @@
+{# Get variables #}
+{% set vars = return_vars() %}
+
+{# Log configuration details #}
+{{ log_model_details() }}
+
+{# Set up dbt configuration #}
+{{ config (
+    materialized = "view",
+    tags = ['streamline','core','realtime','phase_1']
+) }}
+
 WITH blocks AS (
 
     SELECT
