@@ -36,6 +36,10 @@ WITH bronze_transactions AS (
             DATA :tx_result :gas_wanted,
             f.value :tx_result :gas_wanted
         ) :: NUMBER AS gas_wanted,
+        CASE
+            WHEN f.value :tx_result :code :: NUMBER = 0 THEN TRUE
+            ELSE FALSE
+        END AS tx_succeeded,
         COALESCE(
             DATA :tx_result :code,
             f.value :tx_result :code
@@ -88,7 +92,7 @@ WITH bronze_transactions AS (
 )
 SELECT
     block_id,
-    block_timestamp,
+    b.block_timestamp,
     codespace,
     tx_id,
     tx_index,
@@ -112,6 +116,8 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     bronze_transactions
+    JOIN {{ ref('silver__blocks') }} b
+    ON t.block_id = b.block_id 
 QUALIFY(ROW_NUMBER() over (
     PARTITION BY block_id_requested, tx_id
     ORDER BY _inserted_timestamp DESC)

@@ -5,7 +5,7 @@
 {{ log_model_details() }}
 
 {{ config (
-    materialized = 'table',
+    materialized = 'view',
     tags = ['streamline','core','chainhead','phase_1']
 ) }}
 
