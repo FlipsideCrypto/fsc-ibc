@@ -19,10 +19,7 @@ FROM
 WHERE
     _id <= (
         SELECT
-            COALESCE(
-                block_id,
-                0
-            )
+            MAX(block_number)
         FROM
             {{ ref('streamline__chainhead') }}
     )

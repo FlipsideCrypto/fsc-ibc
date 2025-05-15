@@ -12,7 +12,7 @@ sources:
     tables:
       - name: blocks
       - name: tx_counts
-      - name: txs
+      - name: transactions
   - name: crosschain_silver
       {{ 'CROSSCHAIN_DEV' if '_DEV' in target.database.upper() else 'CROSSCHAIN' }}
     schema: silver
