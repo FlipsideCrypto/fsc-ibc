@@ -4,7 +4,7 @@
 {{ log_model_details() }}
 
 {{ config(
-    materialized = 'table',
+    materialized = 'incremental',
     incremental_strategy = 'delete+insert',
     unique_key = "block_timestamp_hour",
     cluster_by = ['block_timestamp_hour::DATE'],
