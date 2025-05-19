@@ -34,7 +34,7 @@ WITH txs AS (
         s.modified_timestamp
     FROM
         {{ ref('silver_stats__core_metrics_hourly') }} s
-        LEFT JOIN {{ ref('silver__hourly_prices_coin_gecko') }} p
+        LEFT JOIN {{ ref('silver__hourly_prices_coingecko') }} p
         ON s.block_timestamp_hour = p.recorded_hour
         AND p.id = '{{ vars.GLOBAL_PROJECT_NAME }}'
 )
