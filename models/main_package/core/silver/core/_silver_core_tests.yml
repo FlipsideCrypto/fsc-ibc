@@ -1,0 +1,200 @@
+version: 2
+
+models:
+  - name: silver__blocks
+    config:
+      contract:
+        enforced: true
+    data_tests:
+      - dbt_utils.sequential_values:
+          column_name: block_id
+          interval: 1
+          config:
+            error_if: ">100"
+            tags: ['test_recency']
+    columns:
+      - name: block_id
+        data_type: NUMBER
+        data_tests:
+          - not_null:
+              tags: ['test_quality']
+      - name: block_timestamp
+        data_type: TIMESTAMP_NTZ
+        data_tests:
+          - not_null:
+              tags: ['test_quality']
+      - name: chain_id
+        data_type: VARCHAR
+      - name: tx_count
+        data_type: NUMBER
+        data_tests:
+          - dbt_utils.expression_is_true:
+              expression: ">=0"
+              tags: ['test_quality']
+      - name: proposer_address
+        data_type: VARCHAR
+        data_tests:
+          - not_null:
+              tags: ['test_quality']
+      - name: validator_hash
+        data_type: VARCHAR
+        data_tests:
+          - not_null:
+              tags: ['test_quality']
+      - name: header
+        data_type: VARIANT
+      - name: _inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: blocks_id
+        data_type: VARCHAR
+      - name: inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: modified_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: _invocation_id
+        data_type: VARCHAR
+      
+  - name: silver__msg_attributes
+    columns:
+      - name: block_id
+        data_type: NUMBER
+      - name: block_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: tx_id
+        data_type: VARCHAR
+      - name: tx_succeeded
+        data_type: BOOLEAN
+      - name: msg_group
+        data_type: NUMBER
+      - name: msg_sub_group
+        data_type: NUMBER
+      - name: msg_index
+        data_type: NUMBER
+      - name: msg_type
+        data_type: VARCHAR
+      - name: attribute_index
+        data_type: NUMBER
+      - name: attribute_key
+        data_type: VARCHAR
+      - name: attribute_value
+        data_type: VARCHAR
+      - name: msg_attributes_id
+        data_type: VARCHAR
+      - name: inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: modified_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: _inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: _invocation_id
+        data_type: VARCHAR
+              
+  - name: silver__msgs
+    columns:
+      - name: block_id
+        data_type: NUMBER
+      - name: block_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: tx_id
+        data_type: VARCHAR
+      - name: tx_succeeded
+        data_type: BOOLEAN
+      - name: msg_group
+        data_type: NUMBER
+      - name: msg_sub_group
+        data_type: NUMBER
+      - name: msg_index
+        data_type: NUMBER
+      - name: msg_type
+        data_type: VARCHAR
+      - name: msg
+        data_type: VARIANT
+      - name: msgs_id
+        data_type: VARCHAR
+      - name: inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: modified_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: _inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: _invocation_id
+        data_type: VARCHAR
+        
+  - name: silver__transactions_logs
+    columns:
+      - name: block_id
+        data_type: NUMBER
+      - name: block_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: tx_id
+        data_type: VARCHAR
+      - name: tx_succeeded
+        data_type: BOOLEAN
+      - name: tx_code
+        data_type: NUMBER
+      - name: codespace
+        data_type: VARIANT
+      - name: tx_log
+        data_type: VARIANT
+      - name: transactions_logs_id
+        data_type: VARCHAR
+      - name: _inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: modified_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: _invocation_id
+        data_type: VARCHAR
+        
+  - name: silver__transactions
+    config:
+      contract:
+        enforced: true
+    columns:
+      - name: block_id
+        data_type: NUMBER
+        data_tests:
+          - not_null:
+              tags: ['test_quality']
+      - name: block_timestamp
+        data_type: TIMESTAMP_NTZ
+        data_tests:
+          - not_null:
+              tags: ['test_quality']
+      - name: codespace
+        data_type: VARIANT
+      - name: tx_id
+        data_type: VARCHAR
+        data_tests:
+          - not_null:
+              tags: ['test_quality']
+      - name: tx_index
+        data_type: NUMBER
+      - name: tx_log
+        data_type: VARCHAR
+      - name: tx_succeeded
+        data_type: BOOLEAN
+      - name: gas_used
+        data_type: NUMBER
+      - name: gas_wanted
+        data_type: NUMBER
+      - name: tx_code
+        data_type: NUMBER
+      - name: DATA
+        data_type: VARIANT
+      - name: partition_key
+        data_type: VARCHAR
+      - name: block_id_requested
+        data_type: NUMBER
+      - name: _inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: transactions_id
+        data_type: VARCHAR
+      - name: inserted_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: modified_timestamp
+        data_type: TIMESTAMP_NTZ
+      - name: _invocation_id
+        data_type: VARCHAR
+  - name: silver__transfers

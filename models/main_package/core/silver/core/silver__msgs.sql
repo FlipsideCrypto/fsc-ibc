@@ -127,8 +127,6 @@ msgs AS (
         concat_ws(
         '-',
         bronze_msgs.tx_id,
-        bronze_msgs.msg_index
-        ) AS unique_key,
         _inserted_timestamp
     FROM
         bronze_msgs
@@ -146,7 +144,6 @@ SELECT
     msg_index,
     msg_type,
     msg :: OBJECT AS msg,
-    unique_key,
     {{ dbt_utils.generate_surrogate_key(
         ['tx_id','msg_index']
     ) }} AS msgs_id,
