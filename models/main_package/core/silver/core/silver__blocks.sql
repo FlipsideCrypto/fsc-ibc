@@ -50,9 +50,9 @@ WITH bronze_blocks AS (
         AND DATA :error IS NULL
         AND DATA :result :begin_block_events IS NULL
     {% if is_incremental() %}
-    AND _inserted_timestamp :: DATE >= (
+    AND _inserted_timestamp >= (
         SELECT
-            MAX(_inserted_timestamp) :: DATE - 2
+            MAX(_inserted_timestamp)
         FROM
             {{ this }}
     )
