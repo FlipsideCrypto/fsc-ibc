@@ -6,7 +6,7 @@
 
 {{ config(
     materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
+    incremental_strategy = 'merge',
     unique_key = 'transactions_id',
     cluster_by = ['block_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id, tx_id)",

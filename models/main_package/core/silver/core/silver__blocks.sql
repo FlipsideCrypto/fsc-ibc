@@ -5,7 +5,7 @@
 
 {{ config(
     materialized = 'incremental',
-    incremental_strategy = 'delete+insert',
+    incremental_strategy = 'merge',
     unique_key = 'blocks_id',
     cluster_by = ['modified_timestamp::DATE'],
     incremental_predicates = [fsc_ibc.standard_predicate()],
