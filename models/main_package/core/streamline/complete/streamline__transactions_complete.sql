@@ -1,8 +1,6 @@
 {# Get variables #}
 {% set vars = return_vars() %}
-
 -- depends_on: {{ ref('bronze__transactions') }}
-
 {{ config (
     materialized = "incremental",
     incremental_strategy = 'merge',
@@ -14,15 +12,8 @@
 ) }}
 
 SELECT
-    COALESCE(
-        VALUE :block_id_REQUESTED,
-        DATA :height,
-        VALUE :data :result :txs [0] :height
-    ) :: INT AS block_id,
-    COALESCE(
-        VALUE :PAGE_NUMBER,
-        metadata :request :params [2]
-    ) :: INT AS page_number,
+    VALUE :BLOCK_ID_REQUESTED :: INT AS block_id,
+    VALUE :PAGE_NUMBER :: INT AS page_number,
     {{ dbt_utils.generate_surrogate_key(
         ['block_id','page_number']
     ) }} AS complete_transactions_id,

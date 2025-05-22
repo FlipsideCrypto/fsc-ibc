@@ -1,9 +1,7 @@
 {# Get variables #}
 {% set vars = return_vars() %}
-
 -- depends_on: {{ ref('bronze__transactions') }}
 -- depends_on: {{ ref('bronze__transactions_fr') }}
-
 {{ config (
     materialized = "incremental",
     incremental_strategy = 'merge',
@@ -14,111 +12,56 @@
 ) }}
 
 WITH bronze_transactions AS (
+
     SELECT
         block_id,
-        COALESCE(
-            DATA :hash, 
-            f.value :hash
-        ) :: STRING AS tx_id,
-        COALESCE(
-            DATA :index, 
-            f.index
-        ) AS tx_index,
-        COALESCE(
-            DATA :tx_result :codespace,
-            f.value :tx_result :codespace
-        ) :: STRING AS codespace,
-        COALESCE(
-            DATA :tx_result :gas_used,
-            f.value :tx_result :gas_used
-        ) :: NUMBER AS gas_used,
-        COALESCE(
-            DATA :tx_result :gas_wanted,
-            f.value :tx_result :gas_wanted
-        ) :: NUMBER AS gas_wanted,
+        TO_TIMESTAMP(
+            DATA :BLOCK_TIMESTAMP 'YYYY_MM_DD_HH_MI_SS_FF3'
+        ) AS block_timestamp,
+        DATA :hash :: STRING AS tx_id,
+        DATA :index AS tx_index,
+        DATA :tx_result :codespace :: STRING AS codespace,
+        DATA :tx_result :gas_used :: NUMBER AS gas_used,
+        DATA :tx_result :gas_wanted :: NUMBER AS gas_wanted,
         CASE
-            WHEN f.value :tx_result :code :: NUMBER = 0 THEN TRUE
+            WHEN DATA :tx_result :code :: NUMBER = 0 THEN TRUE
             ELSE FALSE
         END AS tx_succeeded,
-        COALESCE(
-            DATA :tx_result :code,
-            f.value :tx_result :code
-        ) :: INT AS tx_code,
+        DATA :tx_result :code :: INT AS tx_code,
         COALESCE(
             TRY_PARSE_JSON(
-                COALESCE(
-                    DATA :tx_result :log,
-                    f.value :tx_result :log
-                )
+                DATA :tx_result :log
             ),
-            COALESCE(
-                DATA :tx_result :log,
-                f.value :tx_result :log
-            )
+            DATA :tx_result :log
         ) AS tx_log,
-        CASE
-            WHEN f.value IS NOT NULL THEN f.value
-            ELSE DATA
-        END AS DATA,
+        DATA,
         partition_key,
-        COALESCE(
-            transactions.value :block_id_REQUESTED,
-            REPLACE(
-                metadata :request :params [0],
-                'tx.height='
-            )
-        ) AS block_id_requested,
-        inserted_timestamp AS _inserted_timestamp
+        DATA :BLOCK_ID_REQUESTED AS block_id_requested,
+        inserted_timestamp AS _inserted_timestamp,
+        {{ dbt_utils.generate_surrogate_key(
+            ['block_id_requested', 'tx_id']
+        ) }} AS transactions_id,
+        SYSDATE() AS inserted_timestamp,
+        SYSDATE() AS modified_timestamp,
+        '{{ invocation_id }}' AS _invocation_id
     FROM
-        {% if is_incremental() %}
-            {{ ref('bronze__transactions') }}
-        {% else %}
-            {{ ref('bronze__transactions_fr') }}
-        {% endif %}
-        AS transactions
-    JOIN LATERAL FLATTEN(
-        DATA :result :txs,
-        outer => TRUE
-    ) AS f
-    WHERE
-        {% if is_incremental() %}
-        inserted_timestamp >= (
-            SELECT
-                MAX(_inserted_timestamp)
-            FROM
-                {{ this }}
-        )
-        {% endif %}
+
+{% if is_incremental() %}
+{{ ref('bronze__transactions') }}
+{% else %}
+    {{ ref('bronze__transactions_fr') }}
+{% endif %}
+WHERE
+
+{% if is_incremental() %}
+inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
 )
-SELECT
-    block_id,
-    b.block_timestamp,
-    codespace,
-    tx_id,
-    tx_index,
-    tx_log,
-    tx_succeeded,
-    {# tx_from, #}
-    {# fee, #}
-    {# fee_denom, #}
-    gas_used,
-    gas_wanted,
-    tx_code,
-    DATA,
-    partition_key,
-    block_id_requested,
-    _inserted_timestamp,
-    {{ dbt_utils.generate_surrogate_key(
-        ['block_id_requested', 'tx_id']
-    ) }} AS transactions_id,
-    SYSDATE() AS inserted_timestamp,
-    SYSDATE() AS modified_timestamp,
-    '{{ invocation_id }}' AS _invocation_id
-FROM
-    bronze_transactions
-    JOIN {{ ref('silver__blocks') }} b
-    ON t.block_id = b.block_id 
-QUALIFY(ROW_NUMBER() over (
-    PARTITION BY block_id_requested, tx_id
-    ORDER BY _inserted_timestamp DESC)
-) = 1 
+{% endif %}
+
+qualify(ROW_NUMBER() over (PARTITION BY block_id_requested, tx_id
+ORDER BY
+    _inserted_timestamp DESC)) = 1

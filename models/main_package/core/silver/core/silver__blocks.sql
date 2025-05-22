@@ -1,8 +1,6 @@
 {# Get variables #}
 {% set vars = return_vars() %}
-
 -- depends_on: {{ ref('bronze__blocks') }}
-
 {{ config(
     materialized = 'incremental',
     incremental_strategy = 'merge',
@@ -13,6 +11,7 @@
 ) }}
 
 WITH bronze_blocks AS (
+
     SELECT
         '{{ vars.GLOBAL_PROJECT_NAME }}' AS blockchain,
         block_id,
@@ -27,8 +26,12 @@ WITH bronze_blocks AS (
             DATA :block :header :chain_id :: STRING
         ) AS chain_id,
         COALESCE(
-            ARRAY_SIZE(DATA :result :block :data :txs) :: NUMBER,
-            ARRAY_SIZE(DATA :block :data :txs) :: NUMBER
+            ARRAY_SIZE(
+                DATA :result :block :data :txs
+            ) :: NUMBER,
+            ARRAY_SIZE(
+                DATA :block :data :txs
+            ) :: NUMBER
         ) AS tx_count,
         COALESCE(
             DATA :result :block :header :proposer_address :: STRING,
@@ -44,19 +47,24 @@ WITH bronze_blocks AS (
         ) AS header,
         _inserted_timestamp
     FROM
-        {{ ref('bronze__blocks') }}
-    WHERE
-        VALUE :data :error IS NULL
-        AND DATA :error IS NULL
-        AND DATA :result :begin_block_events IS NULL
-    {% if is_incremental() %}
-    AND _inserted_timestamp >= (
-        SELECT
-            MAX(_inserted_timestamp)
-        FROM
-            {{ this }}
-    )
-    {% endif %}
+
+{% if is_incremental() %}
+{{ ref('bronze__blocks') }}
+{% else %}
+    {{ ref('bronze__blocks_fr') }}
+{% endif %}
+WHERE
+    VALUE :data :error IS NULL
+    AND DATA :error IS NULL
+
+{% if is_incremental() %}
+AND _inserted_timestamp >= (
+    SELECT
+        MAX(_inserted_timestamp)
+    FROM
+        {{ this }}
+)
+{% endif %}
 )
 SELECT
     block_id,
@@ -72,8 +80,9 @@ SELECT
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    bronze_blocks
-QUALIFY ROW_NUMBER() over (
-    PARTITION BY chain_id, block_id 
-    ORDER BY _inserted_timestamp DESC
-) = 1
+    bronze_blocks qualify ROW_NUMBER() over (
+        PARTITION BY chain_id,
+        block_id
+        ORDER BY
+            _inserted_timestamp DESC
+    ) = 1

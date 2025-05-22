@@ -24,6 +24,7 @@ WITH blocks AS (
 )
 SELECT
     ROUND(block_id, -4) :: INT AS partition_key,
+    block_id,
     {{ target.database }}.live.udf_api(
         'POST',
         '{{ vars.GLOBAL_NODE_URL }}',
@@ -40,9 +41,7 @@ SELECT
         '{{ vars.GLOBAL_NODE_VAULT_PATH }}'
     ) AS request
 FROM
-    blocks
-ORDER BY
-    block_id
+    blocks    
 
 LIMIT {{ vars.MAIN_SL_BLOCKS_REALTIME_SQL_LIMIT }}
 
@@ -54,7 +53,8 @@ LIMIT {{ vars.MAIN_SL_BLOCKS_REALTIME_SQL_LIMIT }}
         'producer_batch_size': vars.MAIN_SL_BLOCKS_REALTIME_PRODUCER_BATCH_SIZE,
         'worker_batch_size': vars.MAIN_SL_BLOCKS_REALTIME_WORKER_BATCH_SIZE,
         'async_concurrent_requests': vars.MAIN_SL_BLOCKS_REALTIME_ASYNC_CONCURRENT_REQUESTS,
-        'sql_source': "{{this.identifier}}"
+        'sql_source': "{{this.identifier}}",
+        "order_by_column": "block_id" }
     } %}
 
     {% set function_call_sql %}
