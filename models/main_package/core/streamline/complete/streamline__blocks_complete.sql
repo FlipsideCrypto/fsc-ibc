@@ -1,6 +1,5 @@
 {# Get variables #}
 {% set vars = return_vars() %}
-
 -- depends_on: {{ ref('bronze__blocks') }}
 {{ config (
     materialized = "incremental",
@@ -14,7 +13,10 @@
 
 SELECT
     DATA :result :block :header :height :: INT AS block_id,
-    {{ dbt_utils.generate_surrogate_key(
+    DATA :result :block :header :time :: TIMESTAMP AS block_timestamp,
+    ARRAY_SIZE(
+        DATA :result :block :data :txs
+    ) tx_count {{ dbt_utils.generate_surrogate_key(
         ['block_id']
     ) }} AS complete_blocks_id,
     SYSDATE() AS inserted_timestamp,

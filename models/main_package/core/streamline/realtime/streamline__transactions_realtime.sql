@@ -16,7 +16,7 @@ WITH blocks AS (
         A.block_id,
         tx_count
     FROM
-        {{ ref('streamline__tx_counts_complete') }} A
+        {{ ref('streamline__blocks_complete') }} A
     WHERE
         tx_count > 0
 ),
@@ -83,11 +83,10 @@ numbers AS (
             '{{ vars.GLOBAL_NODE_VAULT_PATH }}'
         ) AS request,
         page_number,
-        block_id AS block_id_requested
+        block_id AS block_id_requested,
+        to_char(block_timestamp,'YYYY_MM_DD_HH_MI_SS_FF3') AS block_timestamp
     FROM
         blocks_with_page_numbers
-    ORDER BY
-        block_id
 
 LIMIT {{ vars.MAIN_SL_TRANSACTIONS_REALTIME_SQL_LIMIT }}
 
@@ -100,7 +99,8 @@ LIMIT {{ vars.MAIN_SL_TRANSACTIONS_REALTIME_SQL_LIMIT }}
         'worker_batch_size': vars.MAIN_SL_TRANSACTIONS_REALTIME_WORKER_BATCH_SIZE,
         'async_concurrent_requests': vars.MAIN_SL_TRANSACTIONS_REALTIME_ASYNC_CONCURRENT_REQUESTS,
         'sql_source': "{{this.identifier}}",
-        'exploded_key': '["result.txs"]'
+        'exploded_key': '["result.txs"]',
+        "order_by_column": "block_id_requested" }
     } %}
 
     {% set function_call_sql %}
