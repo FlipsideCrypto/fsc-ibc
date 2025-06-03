@@ -100,7 +100,7 @@ LIMIT {{ vars.MAIN_SL_TRANSACTIONS_REALTIME_SQL_LIMIT }}
         'async_concurrent_requests': vars.MAIN_SL_TRANSACTIONS_REALTIME_ASYNC_CONCURRENT_REQUESTS,
         'sql_source': "{{this.identifier}}",
         'exploded_key': '["result.txs"]',
-        "order_by_column": "block_id_requested" }
+        "order_by_column": "block_id_requested"
     } %}
 
     {% set function_call_sql %}

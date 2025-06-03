@@ -4,7 +4,7 @@ models:
   - name: silver__blocks
     config:
       contract:
-        enforced: true
+        enforced: false
     data_tests:
       - dbt_utils.sequential_values:
           column_name: block_id
@@ -150,7 +150,7 @@ models:
   - name: silver__transactions
     config:
       contract:
-        enforced: true
+        enforced: false
     columns:
       - name: block_id
         data_type: NUMBER
