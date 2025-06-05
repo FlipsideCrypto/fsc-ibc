@@ -14,7 +14,7 @@ WITH bronze_blocks AS (
 
     SELECT
         '{{ vars.GLOBAL_PROJECT_NAME }}' AS blockchain,
-        block_id,
+        VALUE :BLOCK_ID :: INT AS block_id,
         COALESCE(
             DATA :result :block :header :time :: TIMESTAMP,
             DATA :block :header :time :: TIMESTAMP,
@@ -45,7 +45,7 @@ WITH bronze_blocks AS (
             DATA :result :block :header,
             DATA :block :header
         ) AS header,
-        _inserted_timestamp
+        inserted_timestamp
     FROM
 
 {% if is_incremental() %}
@@ -58,15 +58,16 @@ WHERE
     AND DATA :error IS NULL
 
 {% if is_incremental() %}
-AND _inserted_timestamp >= (
+AND inserted_timestamp >= (
     SELECT
-        MAX(_inserted_timestamp)
+        MAX(inserted_timestamp)
     FROM
         {{ this }}
 )
 {% endif %}
 )
 SELECT
+    blockchain,
     block_id,
     block_timestamp,
     chain_id,
@@ -74,15 +75,15 @@ SELECT
     proposer_address,
     validator_hash,
     header,
-    _inserted_timestamp,
     {{ dbt_utils.generate_surrogate_key(['chain_id', 'block_id']) }} AS blocks_id,
     SYSDATE() AS inserted_timestamp,
     SYSDATE() AS modified_timestamp,
     '{{ invocation_id }}' AS _invocation_id
 FROM
-    bronze_blocks qualify ROW_NUMBER() over (
+    bronze_blocks 
+QUALIFY ROW_NUMBER() OVER (
         PARTITION BY chain_id,
         block_id
         ORDER BY
-            _inserted_timestamp DESC
+            inserted_timestamp DESC
     ) = 1

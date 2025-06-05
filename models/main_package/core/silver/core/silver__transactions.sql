@@ -14,9 +14,10 @@
 WITH bronze_transactions AS (
 
     SELECT
-        block_id,
-        TO_TIMESTAMP(
-            DATA :BLOCK_TIMESTAMP 'YYYY_MM_DD_HH_MI_SS_FF3'
+        VALUE :BLOCK_ID :: INT AS block_id,
+        TO_TIMESTAMP_NTZ(
+            DATA:BLOCK_TIMESTAMP::STRING,
+            'YYYY_MM_DD_HH_MI_SS_FF3'
         ) AS block_timestamp,
         DATA :hash :: STRING AS tx_id,
         DATA :index AS tx_index,
@@ -34,6 +35,7 @@ WITH bronze_transactions AS (
             ),
             DATA :tx_result :log
         ) AS tx_log,
+        DATA :tx_result :events AS msgs,
         DATA,
         partition_key,
         DATA :BLOCK_ID_REQUESTED AS block_id_requested,
@@ -51,9 +53,8 @@ WITH bronze_transactions AS (
 {% else %}
     {{ ref('bronze__transactions_fr') }}
 {% endif %}
-WHERE
-
 {% if is_incremental() %}
+WHERE
 inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -61,7 +62,12 @@ inserted_timestamp >= (
         {{ this }}
 )
 {% endif %}
-
-qualify(ROW_NUMBER() over (PARTITION BY block_id_requested, tx_id
-ORDER BY
-    _inserted_timestamp DESC)) = 1
+)
+SELECT 
+    *
+FROM 
+    bronze_transactions
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY block_id_requested, tx_id
+    ORDER BY _inserted_timestamp DESC
+) = 1

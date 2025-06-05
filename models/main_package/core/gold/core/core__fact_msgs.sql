@@ -2,7 +2,7 @@
 {% set vars = return_vars() %}
 
 {# Set fact_transactions specific variables #}
-{% set rpc_vars = set_dynamic_fields('fact_transactions') %}
+{#{% set rpc_vars = set_dynamic_fields('fact_transactions') %}#}
 
 {{ config(
     materialized = 'incremental',

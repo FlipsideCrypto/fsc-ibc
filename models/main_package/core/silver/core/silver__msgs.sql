@@ -7,7 +7,7 @@
     materialized = 'incremental',
     incremental_strategy = 'merge',
     unique_key = 'msgs_id',
-    cluster_by = ['modified_timestamp::DATE', 'partition_key'],
+    cluster_by = ['modified_timestamp::DATE'],
     incremental_predicates = [fsc_ibc.standard_predicate()],
     tags = ['silver', 'core', 'phase_2']
 ) }}
@@ -59,7 +59,7 @@ WITH bronze_msgs AS (
         THEN msg :attributes [0] :key
         ELSE TRY_BASE64_DECODE_STRING(msg :attributes [0] :value)
     END AS attribute_value,
-    t._inserted_timestamp
+    transactions._inserted_timestamp
   FROM
     {{ ref('silver__transactions') }} transactions
   JOIN LATERAL FLATTEN(input => transactions.msgs) f
@@ -124,10 +124,7 @@ msgs AS (
         bronze_msgs.msg_index,
         msg_type,
         msg,
-        concat_ws(
-        '-',
-        bronze_msgs.tx_id,
-        _inserted_timestamp
+        bronze_msgs._inserted_timestamp
     FROM
         bronze_msgs
     LEFT JOIN GROUPING b
