@@ -14,6 +14,7 @@ WITH blocks AS (
 
     SELECT
         A.block_id,
+        A.block_timestamp,
         tx_count
     FROM
         {{ ref('streamline__blocks_complete') }} A
@@ -39,6 +40,7 @@ numbers AS (
         blocks_with_page_numbers AS (
             SELECT
                 tt.block_id :: INT AS block_id,
+                tt.block_timestamp,
                 n.n AS page_number
             FROM
                 blocks tt
@@ -52,6 +54,7 @@ numbers AS (
             EXCEPT
             SELECT
                 block_id,
+                null as block_timestamp, -- placeholder for now...
                 page_number
             FROM
                 {{ ref('streamline__transactions_complete') }}
@@ -98,7 +101,7 @@ LIMIT {{ vars.MAIN_SL_TRANSACTIONS_REALTIME_SQL_LIMIT }}
         'producer_batch_size': vars.MAIN_SL_TRANSACTIONS_REALTIME_PRODUCER_BATCH_SIZE,
         'worker_batch_size': vars.MAIN_SL_TRANSACTIONS_REALTIME_WORKER_BATCH_SIZE,
         'async_concurrent_requests': vars.MAIN_SL_TRANSACTIONS_REALTIME_ASYNC_CONCURRENT_REQUESTS,
-        'sql_source': "{{this.identifier}}",
+        'sql_source' : this.identifier
         'exploded_key': '["result.txs"]',
         "order_by_column": "block_id_requested"
     } %}
@@ -106,7 +109,7 @@ LIMIT {{ vars.MAIN_SL_TRANSACTIONS_REALTIME_SQL_LIMIT }}
     {% set function_call_sql %}
     {{ fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
-        target = '{{this.schema}}.{{this.identifier}}',
+        target = this.schema ~ '.' ~ this.identifier,
         params = params
     ) }}
     {% endset %}

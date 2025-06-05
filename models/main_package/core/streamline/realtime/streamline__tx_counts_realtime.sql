@@ -20,7 +20,7 @@ WITH blocks AS (
     SELECT
         block_id
     FROM
-        {{ ref('streamline__tx_counts_complete') }}
+        {{ ref('streamline__tx_count_complete') }}
 ),
 {# retry AS (
 SELECT
@@ -80,13 +80,13 @@ ORDER BY
         'producer_batch_size': vars.MAIN_SL_TX_COUNTS_REALTIME_PRODUCER_BATCH_SIZE,
         'worker_batch_size': vars.MAIN_SL_TX_COUNTS_REALTIME_WORKER_BATCH_SIZE,
         'async_concurrent_requests': vars.MAIN_SL_TX_COUNTS_REALTIME_ASYNC_CONCURRENT_REQUESTS,
-        'sql_source' :"{{this.identifier}}"
+        'sql_source' : this.identifier
     } %}
 
     {% set function_call_sql %}
     {{ fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
-        target = '{{this.schema}}.{{this.identifier}}',
+        target = this.schema ~ '.' ~ this.identifier,
         params = params
     ) }}
     {% endset %}

@@ -53,14 +53,14 @@ LIMIT {{ vars.MAIN_SL_BLOCKS_REALTIME_SQL_LIMIT }}
         'producer_batch_size': vars.MAIN_SL_BLOCKS_REALTIME_PRODUCER_BATCH_SIZE,
         'worker_batch_size': vars.MAIN_SL_BLOCKS_REALTIME_WORKER_BATCH_SIZE,
         'async_concurrent_requests': vars.MAIN_SL_BLOCKS_REALTIME_ASYNC_CONCURRENT_REQUESTS,
-        'sql_source': "{{this.identifier}}",
+        'sql_source' : this.identifier
         "order_by_column": "block_id"
     } %}
 
     {% set function_call_sql %}
     {{ fsc_utils.if_data_call_function_v2(
         func = 'streamline.udf_bulk_rest_api_v2',
-        target = '{{this.schema}}.{{this.identifier}}',
+        target = this.schema ~ '.' ~ this.identifier,
         params = params
     ) }}
     {% endset %}

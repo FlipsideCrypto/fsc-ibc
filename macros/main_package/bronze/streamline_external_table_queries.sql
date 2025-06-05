@@ -30,7 +30,7 @@
             b.partition_key = s.partition_key
 {% endmacro %}
 
-{% macro streamline_external_table_FR_query_v2(
+{% macro streamline_external_table_query_fr(
         source_name,
         partition_function="CAST(SPLIT_PART(SPLIT_PART(file_name, '/', 4), '_', 1) AS INTEGER)"
     ) %}

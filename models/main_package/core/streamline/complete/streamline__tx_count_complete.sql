@@ -1,7 +1,7 @@
 {# Get variables #}
 {% set vars = return_vars() %}
 
--- depends_on: {{ ref('bronze__tx_counts') }}
+-- depends_on: {{ ref('bronze__tx_count') }}
 
 {{ config (
     materialized = "incremental",
@@ -26,7 +26,7 @@ SELECT
 FROM
 
 {% if is_incremental() %}
-{{ ref('bronze__tx_counts') }}
+{{ ref('bronze__tx_count') }}
 WHERE
     inserted_timestamp >= (
         SELECT
@@ -34,9 +34,8 @@ WHERE
         FROM
             {{ this }}
     )
-    AND block_id NOT IN (21208991)
 {% else %}
-    {{ ref('bronze__tx_counts_fr') }}
+    {{ ref('bronze__tx_count_fr') }}
 {% endif %}
 
 qualify(ROW_NUMBER() over (PARTITION BY block_id
