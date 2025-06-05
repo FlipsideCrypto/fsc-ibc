@@ -35,11 +35,11 @@ WITH silver_msgs AS (
         END AS attribute_value,
         msgs._inserted_timestamp
     FROM
-        {{ ref('silver__msgs') }} AS msgs
-    LATERAL FLATTEN(
-        input => msgs.msg,
-        path => 'attributes'
-    ) AS f
+        {{ ref('silver__msgs') }} AS msgs,
+        LATERAL FLATTEN(
+            input => msgs.msg,
+            path => 'attributes'
+        ) AS f
     {% if is_incremental() %}
     WHERE
         _inserted_timestamp :: DATE >= (
