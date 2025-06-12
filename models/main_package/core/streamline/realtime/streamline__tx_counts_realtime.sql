@@ -50,8 +50,7 @@ SELECT
         'POST',
         '{{ vars.GLOBAL_NODE_URL }}',
         OBJECT_CONSTRUCT(
-            'Content-Type', 'application/json',
-            'fsc-quantum-state', 'streamline'
+            'Content-Type', 'application/json'
         ),
         OBJECT_CONSTRUCT(
             'id', block_id,

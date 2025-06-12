@@ -29,6 +29,7 @@ WITH event_attributes AS (
     LATERAL FLATTEN(input => e.value:attributes) a
     WHERE t.tx_log IS NOT NULL
     AND t.tx_succeeded = TRUE
+    AND IS_OBJECT(PARSE_JSON(t.tx_log))
     {% if is_incremental() %}
     AND t._inserted_timestamp >= (
         SELECT MAX(_inserted_timestamp)

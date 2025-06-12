@@ -81,6 +81,8 @@ SELECT
     '{{ invocation_id }}' AS _invocation_id
 FROM
     bronze_blocks 
+WHERE
+    block_id is not null
 QUALIFY ROW_NUMBER() OVER (
         PARTITION BY chain_id,
         block_id
