@@ -1,7 +1,6 @@
 {# Get variables #}
 {% set vars = return_vars() %}
--- depends_on: {{ ref('bronze__transactions') }}
--- depends_on: {{ ref('bronze__transactions_fr') }}
+
 {{ config (
     materialized = "incremental",
     incremental_strategy = 'merge',
@@ -11,12 +10,15 @@
     tags = ['silver', 'core', 'phase_2']
 ) }}
 
+-- depends_on: {{ ref('bronze__transactions') }}
+-- depends_on: {{ ref('bronze__transactions_fr') }}
+
 WITH bronze_transactions AS (
 
     SELECT
-        VALUE :BLOCK_ID :: INT AS block_id,
+        VALUE :BLOCK_ID_REQUESTED AS block_id,
         TO_TIMESTAMP_NTZ(
-            DATA:BLOCK_TIMESTAMP::STRING,
+            VALUE:BLOCK_TIMESTAMP::STRING,
             'YYYY_MM_DD_HH_MI_SS_FF3'
         ) AS block_timestamp,
         DATA :hash :: STRING AS tx_id,
@@ -38,10 +40,9 @@ WITH bronze_transactions AS (
         DATA :tx_result :events AS msgs,
         DATA,
         partition_key,
-        DATA :BLOCK_ID_REQUESTED AS block_id_requested,
         inserted_timestamp AS _inserted_timestamp,
         {{ dbt_utils.generate_surrogate_key(
-            ['block_id_requested', 'tx_id']
+            ['block_id', 'tx_id']
         ) }} AS transactions_id,
         SYSDATE() AS inserted_timestamp,
         SYSDATE() AS modified_timestamp,
@@ -53,8 +54,10 @@ WITH bronze_transactions AS (
 {% else %}
     {{ ref('bronze__transactions_fr') }}
 {% endif %}
-{% if is_incremental() %}
 WHERE
+    DATA <> PARSE_JSON('[]')
+{% if is_incremental() %}
+AND
 inserted_timestamp >= (
     SELECT
         MAX(_inserted_timestamp)
@@ -68,6 +71,6 @@ SELECT
 FROM 
     bronze_transactions
 QUALIFY ROW_NUMBER() OVER (
-    PARTITION BY block_id_requested, tx_id
+    PARTITION BY block_id, tx_id
     ORDER BY _inserted_timestamp DESC
 ) = 1

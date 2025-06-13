@@ -11,7 +11,8 @@
     cluster_by = ['block_timestamp::DATE'],
     post_hook = "ALTER TABLE {{ this }} ADD SEARCH OPTIMIZATION on equality(block_id, tx_id)",
     incremental_predicates = [fsc_ibc.standard_predicate()],
-    tags = ['gold', 'core', 'phase_2']
+    tags = ['gold', 'core', 'phase_2'],
+    enabled = false
 ) }}
 
 SELECT
